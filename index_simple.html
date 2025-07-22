@@ -1,0 +1,462 @@
+<!DOCTYPE html>
+<html lang="th">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>แจ้งการชำระเงิน - เวอร์ชันทดสอบ</title>
+        <style>
+            * {
+                margin: 0;
+                padding: 0;
+                box-sizing: border-box;
+            }
+
+            body {
+                font-family: Arial, sans-serif;
+                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                min-height: 100vh;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                padding: 20px;
+            }
+
+            .container {
+                background: #2c3e50;
+                border-radius: 20px;
+                padding: 40px;
+                width: 100%;
+                max-width: 500px;
+                box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+            }
+
+            .header {
+                text-align: center;
+                margin-bottom: 30px;
+            }
+
+            .header h1 {
+                color: #f1c40f;
+                font-size: 24px;
+                font-weight: 600;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                gap: 10px;
+            }
+
+            .form-group {
+                margin-bottom: 20px;
+            }
+
+            .form-group label {
+                display: block;
+                color: #ecf0f1;
+                font-weight: 500;
+                margin-bottom: 8px;
+            }
+
+            input[type="text"],
+            input[type="date"],
+            input[type="time"],
+            input[type="number"],
+            input[type="file"],
+            textarea {
+                width: 100%;
+                padding: 12px 16px;
+                background: #34495e;
+                border: 2px solid #4a5f7a;
+                border-radius: 8px;
+                color: #ecf0f1;
+                font-size: 14px;
+                transition: all 0.3s ease;
+            }
+
+            input:focus,
+            textarea:focus {
+                outline: none;
+                border-color: #3498db;
+                background: #3c5a78;
+            }
+
+            textarea {
+                min-height: 80px;
+                resize: vertical;
+            }
+
+            .btn {
+                width: 100%;
+                padding: 14px 20px;
+                border: none;
+                border-radius: 10px;
+                font-size: 16px;
+                font-weight: 600;
+                cursor: pointer;
+                transition: all 0.3s ease;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                gap: 8px;
+                margin-top: 20px;
+            }
+
+            .btn-submit {
+                background: linear-gradient(45deg, #f1c40f, #f39c12);
+                color: #2c3e50;
+            }
+
+            .btn-submit:hover {
+                background: linear-gradient(45deg, #f39c12, #e67e22);
+                transform: translateY(-2px);
+                box-shadow: 0 8px 20px rgba(241, 196, 15, 0.3);
+            }
+
+            .response {
+                margin-top: 20px;
+                padding: 15px;
+                border-radius: 8px;
+                display: none;
+            }
+
+            .response.success {
+                background: #27ae60;
+                color: white;
+            }
+
+            .response.error {
+                background: #e74c3c;
+                color: white;
+            }
+
+            .loading {
+                display: none;
+                text-align: center;
+                color: #3498db;
+                margin-top: 20px;
+            }
+
+            .file-list {
+                margin-top: 10px;
+            }
+
+            .file-item {
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                background: #34495e;
+                border: 1px solid #4a5f7a;
+                border-radius: 6px;
+                padding: 8px 12px;
+                margin-bottom: 8px;
+            }
+
+            .file-name {
+                color: #ecf0f1;
+                flex: 1;
+            }
+
+            .file-size {
+                color: #bdc3c7;
+                font-size: 12px;
+                margin: 0 10px;
+            }
+
+            .remove-file {
+                background: #e74c3c;
+                color: white;
+                border: none;
+                border-radius: 50%;
+                width: 20px;
+                height: 20px;
+                cursor: pointer;
+            }
+        </style>
+    </head>
+    <body>
+        <div class="container">
+            <div class="header">
+                <h1>💳 แจ้งการชำระเงิน</h1>
+            </div>
+
+            <form id="paymentForm">
+                <div class="form-group">
+                    <label for="account">ชื่อบัญชี:</label>
+                    <input
+                        type="text"
+                        id="account"
+                        name="account"
+                        placeholder="ใส่ชื่อบัญชี"
+                        required
+                    />
+                </div>
+
+                <div class="form-group">
+                    <label for="transactionId"
+                        >Transaction ID / Order No.:</label
+                    >
+                    <input
+                        type="text"
+                        id="transactionId"
+                        name="transactionId"
+                        placeholder="DM13UWT9R4H7IF"
+                        required
+                    />
+                </div>
+
+                <div class="form-group">
+                    <label for="transferDate">วันที่โอนเงิน:</label>
+                    <input
+                        type="date"
+                        id="transferDate"
+                        name="transferDate"
+                        required
+                    />
+                </div>
+
+                <div class="form-group">
+                    <label for="transferTime">เวลาที่โอนเงิน:</label>
+                    <input
+                        type="time"
+                        id="transferTime"
+                        name="transferTime"
+                        required
+                    />
+                </div>
+
+                <div class="form-group">
+                    <label for="recipientAccount">เลขที่บัญชีที่โอนเข้า:</label>
+                    <input
+                        type="text"
+                        id="recipientAccount"
+                        name="recipientAccount"
+                        placeholder="123-0987699"
+                        required
+                    />
+                </div>
+
+                <div class="form-group">
+                    <label for="amount">จำนวนเงิน (บาท):</label>
+                    <input
+                        type="number"
+                        id="amount"
+                        name="amount"
+                        placeholder="5000.00"
+                        step="0.01"
+                        required
+                    />
+                </div>
+
+                <div class="form-group">
+                    <label for="additional">ข้อมูลเพิ่มเติม / ผู้แจ้ง:</label>
+                    <textarea
+                        id="additional"
+                        name="additional"
+                        placeholder="ข้อมูลเพิ่มเติม..."
+                    ></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label for="attachment">📎 แนบหลักฐานการโอน:</label>
+                    <input
+                        type="file"
+                        id="attachment"
+                        name="attachment"
+                        accept="image/*,.pdf,.doc,.docx"
+                        multiple
+                    />
+                    <div id="fileList" class="file-list"></div>
+                </div>
+
+                <button type="submit" class="btn btn-submit">
+                    ✅ ส่งข้อมูลการชำระเงิน
+                </button>
+            </form>
+
+            <div id="loading" class="loading">
+                <p>🔄 กำลังส่งข้อมูล...</p>
+            </div>
+
+            <div id="response" class="response"></div>
+        </div>
+
+        <script>
+            // ตัวแปรสำหรับเก็บไฟล์ที่เลือก
+            let selectedFiles = []
+
+            // เมื่อ DOM โหลดเสร็จ
+            document.addEventListener("DOMContentLoaded", function () {
+                // ตั้งค่าวันที่และเวลาเริ่มต้น
+                document.getElementById("transferDate").valueAsDate = new Date()
+                const now = new Date()
+                const timeString = now.toTimeString().slice(0, 5)
+                document.getElementById("transferTime").value = timeString
+
+                // จัดการไฟล์
+                document
+                    .getElementById("attachment")
+                    .addEventListener("change", handleFileSelect)
+
+                // จัดการการส่งฟอร์ม
+                document
+                    .getElementById("paymentForm")
+                    .addEventListener("submit", handleFormSubmit)
+            })
+
+            // ฟังก์ชันจัดการการเลือกไฟล์
+            function handleFileSelect(e) {
+                const files = Array.from(e.target.files)
+                selectedFiles = files
+                displayFiles()
+            }
+
+            // ฟังก์ชันแสดงรายการไฟล์
+            function displayFiles() {
+                const fileList = document.getElementById("fileList")
+                fileList.innerHTML = ""
+
+                selectedFiles.forEach((file, index) => {
+                    const fileItem = document.createElement("div")
+                    fileItem.className = "file-item"
+
+                    const fileName = document.createElement("span")
+                    fileName.className = "file-name"
+                    fileName.textContent = file.name
+
+                    const fileSize = document.createElement("span")
+                    fileSize.className = "file-size"
+                    fileSize.textContent = formatFileSize(file.size)
+
+                    const removeBtn = document.createElement("button")
+                    removeBtn.className = "remove-file"
+                    removeBtn.textContent = "×"
+                    removeBtn.type = "button"
+                    removeBtn.onclick = () => removeFile(index)
+
+                    fileItem.appendChild(fileName)
+                    fileItem.appendChild(fileSize)
+                    fileItem.appendChild(removeBtn)
+
+                    fileList.appendChild(fileItem)
+                })
+            }
+
+            // ฟังก์ชันลบไฟล์
+            function removeFile(index) {
+                selectedFiles.splice(index, 1)
+                displayFiles()
+            }
+
+            // ฟังก์ชันฟอร์แมตขนาดไฟล์
+            function formatFileSize(bytes) {
+                if (bytes === 0) return "0 Bytes"
+                const k = 1024
+                const sizes = ["Bytes", "KB", "MB", "GB"]
+                const i = Math.floor(Math.log(bytes) / Math.log(k))
+                return (
+                    parseFloat((bytes / Math.pow(k, i)).toFixed(2)) +
+                    " " +
+                    sizes[i]
+                )
+            }
+
+            // ฟังก์ชันจัดการการส่งฟอร์ม
+            async function handleFormSubmit(e) {
+                e.preventDefault()
+
+                const form = e.target
+                showLoading()
+
+                try {
+                    let uploadedFiles = []
+
+                    // อัปโหลดไฟล์ก่อน (ถ้ามี)
+                    if (selectedFiles.length > 0) {
+                        const fileFormData = new FormData()
+                        selectedFiles.forEach((file) => {
+                            fileFormData.append("files", file)
+                        })
+
+                        const uploadResponse = await fetch(
+                            "/api/upload-attachment",
+                            {
+                                method: "POST",
+                                body: fileFormData,
+                            }
+                        )
+
+                        if (uploadResponse.ok) {
+                            const uploadResult = await uploadResponse.json()
+                            if (uploadResult.success) {
+                                uploadedFiles = uploadResult.files
+                            }
+                        }
+                    }
+
+                    // สร้างข้อมูลการชำระเงิน
+                    const paymentData = {
+                        account: form.account.value,
+                        transactionId: form.transactionId.value,
+                        transferDate: form.transferDate.value,
+                        transferTime: form.transferTime.value,
+                        recipientAccount: form.recipientAccount.value,
+                        amount: parseFloat(form.amount.value),
+                        additional: form.additional.value,
+                        attachmentFiles: uploadedFiles,
+                    }
+
+                    // ส่งข้อมูลการชำระเงิน
+                    const response = await fetch("/api/payment-notification", {
+                        method: "POST",
+                        headers: {
+                            "Content-Type": "application/json",
+                        },
+                        body: JSON.stringify(paymentData),
+                    })
+
+                    const result = await response.json()
+
+                    if (result.success) {
+                        const fileInfo =
+                            uploadedFiles.length > 0
+                                ? ` พร้อมไฟล์แนับ ${uploadedFiles.length} ไฟล์`
+                                : ""
+                        showResponse("success", result.message + fileInfo)
+                        form.reset()
+                        selectedFiles = []
+                        displayFiles()
+                    } else {
+                        showResponse("error", result.message)
+                    }
+                } catch (error) {
+                    console.error("Error:", error)
+                    showResponse(
+                        "error",
+                        "เกิดข้อผิดพลาดในการส่งข้อมูล: " + error.message
+                    )
+                }
+
+                hideLoading()
+            }
+
+            // ฟังก์ชันแสดงสถานะ loading
+            function showLoading() {
+                document.getElementById("loading").style.display = "block"
+                document.getElementById("response").style.display = "none"
+            }
+
+            // ฟังก์ชันซ่อน loading
+            function hideLoading() {
+                document.getElementById("loading").style.display = "none"
+            }
+
+            // ฟังก์ชันแสดงผลลัพธ์
+            function showResponse(type, message) {
+                const responseDiv = document.getElementById("response")
+                responseDiv.className = "response " + type
+                responseDiv.textContent = message
+                responseDiv.style.display = "block"
+                hideLoading()
+            }
+        </script>
+    </body>
+</html>

@@ -1,0 +1,1095 @@
+<!DOCTYPE html>
+<html lang="th">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>แจ้งการชำระเงิน</title>
+        <style>
+            * {
+                margin: 0;
+                padding: 0;
+                box-sizing: border-box;
+            }
+
+            body {
+                font-family: -apple-system, BlinkMacSystemFont, "Segoe UI",
+                    Roboto, "Helvetica Neue", Arial, sans-serif;
+                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                min-height: 100vh;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                padding: 20px;
+            }
+
+            .container {
+                background: #2c3e50;
+                border-radius: 20px;
+                padding: 40px;
+                width: 100%;
+                max-width: 500px;
+                box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+            }
+
+            .header {
+                text-align: center;
+                margin-bottom: 30px;
+            }
+
+            .header h1 {
+                color: #f1c40f;
+                font-size: 24px;
+                font-weight: 600;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                gap: 10px;
+            }
+
+            .form-group {
+                margin-bottom: 20px;
+            }
+
+            label {
+                display: block;
+                color: #ecf0f1;
+                font-size: 14px;
+                margin-bottom: 8px;
+                font-weight: 500;
+            }
+
+            input[type="text"],
+            input[type="date"],
+            input[type="time"],
+            input[type="number"],
+            input[type="file"],
+            textarea {
+                width: 100%;
+                padding: 12px 16px;
+                background: #34495e;
+                border: 2px solid #4a5f7a;
+                border-radius: 8px;
+                color: #ecf0f1;
+                font-size: 14px;
+                transition: all 0.3s ease;
+            }
+
+            input[type="text"]:focus,
+            input[type="date"]:focus,
+            input[type="time"]:focus,
+            input[type="number"]:focus,
+            textarea:focus {
+                outline: none;
+                border-color: #3498db;
+                box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.2);
+            }
+
+            textarea {
+                resize: vertical;
+                min-height: 80px;
+            }
+
+            .file-input {
+                position: relative;
+                overflow: hidden;
+                display: inline-block;
+                width: 100%;
+            }
+
+            .file-input input[type="file"] {
+                position: absolute;
+                left: -9999px;
+            }
+
+            .file-input-label {
+                display: block;
+                padding: 12px 16px;
+                background: #34495e;
+                border: 2px solid #4a5f7a;
+                border-radius: 8px;
+                color: #bdc3c7;
+                cursor: pointer;
+                transition: all 0.3s ease;
+                text-align: center;
+            }
+
+            .file-input-label:hover {
+                background: #3c5a78;
+                border-color: #3498db;
+            }
+
+            .file-list {
+                margin-top: 10px;
+            }
+
+            .file-item {
+                background: #34495e;
+                border: 1px solid #4a5f7a;
+                border-radius: 6px;
+                padding: 8px 12px;
+                margin: 5px 0;
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                color: #ecf0f1;
+                font-size: 14px;
+            }
+
+            .file-item .file-name {
+                flex: 1;
+                overflow: hidden;
+                text-overflow: ellipsis;
+                white-space: nowrap;
+            }
+
+            .file-item .file-size {
+                color: #bdc3c7;
+                font-size: 12px;
+                margin-left: 10px;
+            }
+
+            .file-item .remove-file {
+                background: #e74c3c;
+                color: white;
+                border: none;
+                border-radius: 4px;
+                padding: 4px 8px;
+                cursor: pointer;
+                font-size: 12px;
+                margin-left: 10px;
+            }
+
+            .file-item .remove-file:hover {
+                background: #c0392b;
+            }
+
+            .button-group {
+                display: flex;
+                gap: 15px;
+                margin-top: 30px;
+            }
+
+            .btn {
+                flex: 1;
+                padding: 14px 20px;
+                border: none;
+                border-radius: 10px;
+                font-size: 16px;
+                font-weight: 600;
+                cursor: pointer;
+                transition: all 0.3s ease;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                gap: 8px;
+            }
+
+            .btn-submit {
+                background: #f1c40f;
+                color: #2c3e50;
+            }
+
+            .btn-submit:hover {
+                background: #f39c12;
+                transform: translateY(-2px);
+                box-shadow: 0 8px 20px rgba(241, 196, 15, 0.3);
+            }
+
+            .btn-cancel {
+                background: #e74c3c;
+                color: white;
+            }
+
+            .btn-cancel:hover {
+                background: #c0392b;
+                transform: translateY(-2px);
+                box-shadow: 0 8px 20px rgba(231, 76, 60, 0.3);
+            }
+
+            .loading {
+                display: none;
+                text-align: center;
+                color: #3498db;
+                margin-top: 20px;
+            }
+
+            .response {
+                margin-top: 20px;
+                padding: 15px;
+                border-radius: 8px;
+                display: none;
+            }
+
+            .response.success {
+                background: #27ae60;
+                color: white;
+            }
+
+            .response.error {
+                background: #e74c3c;
+                color: white;
+            }
+
+            .initial-loading {
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                background: rgba(44, 62, 80, 0.95);
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                justify-content: center;
+                z-index: 9999;
+            }
+
+            .initial-loading .spinner {
+                width: 50px;
+                height: 50px;
+                border: 4px solid #34495e;
+                border-top: 4px solid #f1c40f;
+                border-radius: 50%;
+                animation: spin 1s linear infinite;
+                margin-bottom: 20px;
+            }
+
+            @keyframes spin {
+                0% {
+                    transform: rotate(0deg);
+                }
+                100% {
+                    transform: rotate(360deg);
+                }
+            }
+
+            .initial-loading .text {
+                color: #ecf0f1;
+                font-size: 16px;
+                text-align: center;
+            }
+
+            .existing-data-modal {
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                background: rgba(0, 0, 0, 0.7);
+                display: none;
+                align-items: center;
+                justify-content: center;
+                z-index: 10000;
+            }
+
+            .modal-content {
+                background: #2c3e50;
+                padding: 30px;
+                border-radius: 15px;
+                max-width: 500px;
+                width: 90%;
+                text-align: center;
+                box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+            }
+
+            .modal-content h2 {
+                color: #f1c40f;
+                margin-bottom: 15px;
+                font-size: 20px;
+            }
+
+            .modal-content p {
+                color: #ecf0f1;
+                margin-bottom: 20px;
+                line-height: 1.6;
+            }
+
+            .existing-data-info {
+                background: #34495e;
+                padding: 15px;
+                border-radius: 8px;
+                margin: 20px 0;
+                text-align: left;
+            }
+
+            .existing-data-info .info-item {
+                color: #bdc3c7;
+                margin-bottom: 8px;
+            }
+
+            .existing-data-info .info-item strong {
+                color: #3498db;
+            }
+
+            .modal-buttons {
+                display: flex;
+                gap: 15px;
+                justify-content: center;
+            }
+
+            .modal-btn {
+                padding: 12px 25px;
+                border: none;
+                border-radius: 8px;
+                font-size: 14px;
+                font-weight: 600;
+                cursor: pointer;
+                transition: all 0.3s ease;
+            }
+
+            .modal-btn.continue {
+                background: #27ae60;
+                color: white;
+            }
+
+            .modal-btn.continue:hover {
+                background: #219a52;
+            }
+
+            .modal-btn.cancel {
+                background: #e74c3c;
+                color: white;
+            }
+
+            .modal-btn.cancel:hover {
+                background: #c0392b;
+            }
+
+            @media (max-width: 600px) {
+                .container {
+                    padding: 30px 20px;
+                }
+
+                .button-group {
+                    flex-direction: column;
+                }
+            }
+        </style>
+    </head>
+    <body>
+        <!-- Loading หน้าแรก -->
+        <div class="initial-loading" id="initialLoading">
+            <div class="spinner"></div>
+            <div class="text">
+                <div>🔍 กำลังตรวจสอบข้อมูล...</div>
+                <div style="font-size: 14px; margin-top: 10px; color: #bdc3c7">
+                    กรุณารอสักครู่
+                </div>
+            </div>
+        </div>
+
+        <!-- Modal สำหรับข้อมูลที่มีอยู่แล้ว -->
+        <div class="existing-data-modal" id="existingDataModal">
+            <div class="modal-content">
+                <h2>⚠️ พบข้อมูลการชำระเงิน</h2>
+                <p>
+                    ระบบพบว่ามีข้อมูลการชำระเงินสำหรับ Transaction ID
+                    นี้อยู่แล้ว
+                </p>
+
+                <div class="existing-data-info" id="existingDataInfo">
+                    <!-- ข้อมูลที่มีอยู่จะแสดงที่นี่ -->
+                </div>
+
+                <p style="color: #f39c12; font-size: 14px">
+                    คุณต้องการดำเนินการต่อเพื่อแก้ไขข้อมูลหรือไม่?
+                </p>
+
+                <div class="modal-buttons">
+                    <button
+                        class="modal-btn continue"
+                        onclick="continueWithExistingData()"
+                    >
+                        ✓ ดำเนินการต่อ
+                    </button>
+                    <button
+                        class="modal-btn cancel"
+                        onclick="cancelAndRedirect()"
+                    >
+                        ✗ ยกเลิก
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <div class="container" id="mainContainer" style="display: none">
+            <div class="header">
+                <h1>💳 แจ้งการชำระเงิน</h1>
+            </div>
+
+            <form id="paymentForm">
+                <div class="form-group">
+                    <label for="account">ชื่อบัญชี:</label>
+                    <input
+                        type="text"
+                        id="account"
+                        name="account"
+                        placeholder="ใส่ชื่อบัญชี"
+                        required
+                    />
+                </div>
+
+                <div class="form-group">
+                    <label for="transactionId"
+                        >Transaction ID / Order No.:</label
+                    >
+                    <input
+                        type="text"
+                        id="transactionId"
+                        name="transactionId"
+                        placeholder="DM13UWT9R4H7IF"
+                        required
+                    />
+                </div>
+
+                <div class="form-group">
+                    <label for="transferDate">วันที่โอนเงิน:</label>
+                    <input
+                        type="date"
+                        id="transferDate"
+                        name="transferDate"
+                        required
+                    />
+                </div>
+
+                <div class="form-group">
+                    <label for="transferTime">เวลาที่โอนเงิน:</label>
+                    <input
+                        type="time"
+                        id="transferTime"
+                        name="transferTime"
+                        required
+                    />
+                </div>
+
+                <div class="form-group">
+                    <label for="recipientAccount">เลขที่บัญชีที่โอนเข้า:</label>
+                    <input
+                        type="text"
+                        id="recipientAccount"
+                        name="recipientAccount"
+                        placeholder="123-0987699"
+                        required
+                    />
+                </div>
+
+                <div class="form-group">
+                    <label for="amount">จำนวนเงิน (บาท):</label>
+                    <input
+                        type="number"
+                        id="amount"
+                        name="amount"
+                        placeholder="5000.00"
+                        step="0.01"
+                        required
+                    />
+                </div>
+
+                <div class="form-group">
+                    <label for="additional">ข้อมูลเพิ่มเติม / ผู้แจ้ง:</label>
+                    <textarea
+                        id="additional"
+                        name="additional"
+                        placeholder="ข้อมูลเพิ่มเติม..."
+                    ></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label>📎 แนบหลักฐานการโอน:</label>
+                    <div class="file-input">
+                        <input
+                            type="file"
+                            id="attachment"
+                            name="attachment"
+                            accept="image/*,.pdf,.doc,.docx"
+                            multiple
+                        />
+                        <label
+                            for="attachment"
+                            class="file-input-label"
+                            id="fileLabel"
+                        >
+                            เลือกไฟล์ หรือ ลากไฟล์มาวางที่นี่
+                            (สามารถเลือกได้หลายไฟล์)
+                        </label>
+                    </div>
+                    <div id="fileList" class="file-list"></div>
+                </div>
+
+                <div class="button-group">
+                    <button type="submit" class="btn btn-submit">
+                        ✅ ส่งข้อมูลการชำระเงิน
+                    </button>
+                    <button
+                        type="button"
+                        class="btn btn-cancel"
+                        onclick="resetForm()"
+                    >
+                        ✖️ ยกเลิก
+                    </button>
+                </div>
+            </form>
+
+            <div class="loading" id="loading">
+                <div>🔄 กำลังส่งข้อมูล...</div>
+            </div>
+
+            <div class="response" id="response"></div>
+        </div>
+
+        <script>
+            // ตัวแปรสำหรับเก็บข้อมูล
+            let formData = {}
+            let attachmentFile = null
+            let existingPaymentData = null
+            let transactionId = null
+
+            // ฟังก์ชันเริ่มต้นเมื่อหน้าเว็บโหลด
+            document.addEventListener("DOMContentLoaded", function () {
+                // ดึง Transaction ID จาก URL parameters
+                const urlParams = new URLSearchParams(window.location.search)
+                transactionId =
+                    urlParams.get("transaction_id") || urlParams.get("order_no")
+
+                if (transactionId) {
+                    checkExistingTransaction(transactionId)
+                } else {
+                    // ถ้าไม่มี transaction ID ใน URL ให้สร้าง ID ใหม่หรือขอให้ผู้ใช้ใส่
+                    showMainForm()
+                }
+
+                // เพิ่ม event listeners สำหรับการจัดการไฟล์
+                setupFileHandlers()
+                
+                // เพิ่ม event listener สำหรับการส่งฟอร์ม
+                setupFormSubmission()
+
+                // ตั้งค่าวันที่และเวลาเริ่มต้น
+                document.getElementById("transferDate").valueAsDate = new Date()
+                const now = new Date()
+                const timeString = now.toTimeString().slice(0, 5)
+                document.getElementById("transferTime").value = timeString
+            })
+
+            // ฟังก์ชันตรวจสอบข้อมูลที่มีอยู่
+            function checkExistingTransaction(transactionId) {
+                // แสดง loading
+                document.getElementById("initialLoading").style.display = "flex"
+
+                // จำลองการเรียก API เพื่อตรวจสอบข้อมูล
+                setTimeout(() => {
+                    // ตัวอย่างข้อมูลที่มีอยู่แล้ว (ในการใช้งานจริงจะเป็นข้อมูลจาก server)
+                    const mockExistingData = {
+                        transactionId: transactionId,
+                        account: "นาย สมชาย ใจดี",
+                        transferDate: "2024-01-15",
+                        transferTime: "14:30",
+                        recipientAccount: "123-0987699",
+                        amount: 5000.0,
+                        additional: "ชำระค่าสินค้า",
+                        status: "รอตรวจสอบ",
+                        submittedDate: "2024-01-15 14:35:22",
+                    }
+
+                    // จำลองการตรวจสอบ (50% โอกาสที่จะมีข้อมูลอยู่แล้ว)
+                    const hasExistingData = Math.random() > 0.5
+
+                    if (hasExistingData) {
+                        existingPaymentData = mockExistingData
+                        showExistingDataModal(mockExistingData)
+                    } else {
+                        showMainForm()
+                    }
+                }, 2000)
+            }
+
+            // ฟังก์ชันแสดง modal สำหรับข้อมูลที่มีอยู่
+            function showExistingDataModal(data) {
+                document.getElementById("initialLoading").style.display = "none"
+
+                const infoDiv = document.getElementById("existingDataInfo")
+                infoDiv.innerHTML = `
+                <div class="info-item"><strong>Transaction ID:</strong> ${
+                    data.transactionId
+                }</div>
+                <div class="info-item"><strong>ชื่อบัญชี:</strong> ${
+                    data.account
+                }</div>
+                <div class="info-item"><strong>วันที่โอน:</strong> ${
+                    data.transferDate
+                }</div>
+                <div class="info-item"><strong>เวลาที่โอน:</strong> ${
+                    data.transferTime
+                }</div>
+                <div class="info-item"><strong>จำนวนเงิน:</strong> ${data.amount.toLocaleString()} บาท</div>
+                <div class="info-item"><strong>สถานะ:</strong> ${
+                    data.status
+                }</div>
+                <div class="info-item"><strong>ส่งข้อมูลเมื่อ:</strong> ${
+                    data.submittedDate
+                }</div>
+            `
+
+                document.getElementById("existingDataModal").style.display =
+                    "flex"
+            }
+
+            // ฟังก์ชันดำเนินการต่อกับข้อมูลที่มีอยู่
+            function continueWithExistingData() {
+                document.getElementById("existingDataModal").style.display =
+                    "none"
+
+                // นำข้อมูลที่มีอยู่มาใส่ในฟอร์ม
+                if (existingPaymentData) {
+                    document.getElementById("account").value =
+                        existingPaymentData.account
+                    document.getElementById("transactionId").value =
+                        existingPaymentData.transactionId
+                    document.getElementById("transferDate").value =
+                        existingPaymentData.transferDate
+                    document.getElementById("transferTime").value =
+                        existingPaymentData.transferTime
+                    document.getElementById("recipientAccount").value =
+                        existingPaymentData.recipientAccount
+                    document.getElementById("amount").value =
+                        existingPaymentData.amount
+                    document.getElementById("additional").value =
+                        existingPaymentData.additional
+                }
+
+                showMainForm()
+            }
+
+            // ฟังก์ชันยกเลิกและเปลี่ยนเส้นทาง
+            function cancelAndRedirect() {
+                // ในการใช้งานจริงอาจจะ redirect ไปหน้าอื่น
+                alert("ยกเลิกการแจ้งชำระเงิน")
+                window.history.back()
+            }
+
+            // ฟังก์ชันแสดงฟอร์มหลัก
+            function showMainForm() {
+                document.getElementById("initialLoading").style.display = "none"
+                document.getElementById("mainContainer").style.display = "block"
+
+                // ตั้งค่า Transaction ID ในฟอร์ม
+                if (transactionId) {
+                    document.getElementById("transactionId").value =
+                        transactionId
+                }
+            }
+
+            // ฟังก์ชันตั้งค่า file handlers
+            function setupFileHandlers() {
+                // จัดการไฟล์แนบ
+                document
+                    .getElementById("attachment")
+                    .addEventListener("change", function (e) {
+                        const files = Array.from(e.target.files)
+                        
+                        // เพิ่มไฟล์ใหม่เข้ากับไฟล์ที่มีอยู่
+                        files.forEach(file => {
+                            // ตรวจสอบว่าไฟล์นี้ยังไม่ได้ถูกเลือกไว้
+                            const isDuplicate = selectedFiles.some(existingFile => 
+                                existingFile.name === file.name && existingFile.size === file.size
+                            )
+                            
+                            if (!isDuplicate) {
+                                selectedFiles.push(file)
+                            }
+                        })
+                        
+                        displayFiles()
+                        // รีเซ็ต input เพื่อให้สามารถเลือกไฟล์เดิมได้อีก
+                        e.target.value = ""
+                    })
+
+                // จัดการการลากไฟล์
+                const fileInput = document.querySelector(".file-input-label")
+
+                fileInput.addEventListener("dragover", function (e) {
+                    e.preventDefault()
+                    this.style.backgroundColor = "#3c5a78"
+                    this.style.borderColor = "#3498db"
+                })
+
+                fileInput.addEventListener("dragleave", function (e) {
+                    e.preventDefault()
+                    this.style.backgroundColor = "#34495e"
+                    this.style.borderColor = "#4a5f7a"
+                })
+
+                fileInput.addEventListener("drop", function (e) {
+                    e.preventDefault()
+                    this.style.backgroundColor = "#34495e"
+                    this.style.borderColor = "#4a5f7a"
+
+                    const files = Array.from(e.dataTransfer.files)
+                    
+                    // เพิ่มไฟล์ใหม่เข้ากับไฟล์ที่มีอยู่
+                    files.forEach(file => {
+                        const isDuplicate = selectedFiles.some(existingFile => 
+                            existingFile.name === file.name && existingFile.size === file.size
+                        )
+                        
+                        if (!isDuplicate) {
+                            selectedFiles.push(file)
+                        }
+                    })
+                    
+                    displayFiles()
+                })
+            }
+
+            // ฟังก์ชันตั้งค่า form submission
+            function setupFormSubmission() {
+                // จัดการการส่งฟอร์ม
+                document
+                    .getElementById("paymentForm")
+                    .addEventListener("submit", async function (e) {
+                        e.preventDefault()
+
+                        // รวบรวมข้อมูลจากฟอร์ม
+                        const form = e.target
+                        
+                        // แสดงสถานะกำลังส่ง
+                        showLoading()
+
+                        try {
+                            let uploadedFiles = []
+                            
+                            // อัปโหลดไฟล์ก่อน (ถ้ามี)
+                            if (selectedFiles.length > 0) {
+                                const fileFormData = new FormData()
+                                selectedFiles.forEach(file => {
+                                    fileFormData.append("files", file)
+                                })
+                                
+                                const uploadResponse = await fetch("/api/upload-attachment", {
+                                    method: "POST",
+                                    body: fileFormData
+                                })
+                                
+                                if (uploadResponse.ok) {
+                                    const uploadResult = await uploadResponse.json()
+                                    if (uploadResult.success) {
+                                        uploadedFiles = uploadResult.files
+                                    }
+                                }
+                            }
+
+                            // สร้าง JSON object สำหรับส่งข้อมูลการชำระเงิน
+                            const paymentData = {
+                                account: form.account.value,
+                                transactionId: form.transactionId.value,
+                                transferDate: form.transferDate.value,
+                                transferTime: form.transferTime.value,
+                                recipientAccount: form.recipientAccount.value,
+                                amount: parseFloat(form.amount.value),
+                                additional: form.additional.value,
+                                attachmentFiles: uploadedFiles // ส่งรายชื่อไฟล์ที่อัปโหลดแล้ว
+                            }
+
+                            // ส่งข้อมูลการชำระเงิน
+                            const response = await fetch("/api/payment-notification", {
+                                method: "POST",
+                                headers: {
+                                    "Content-Type": "application/json"
+                                },
+                                body: JSON.stringify(paymentData)
+                            })
+
+                            const result = await response.json()
+
+                            if (result.success) {
+                                const fileInfo = uploadedFiles.length > 0 ? ` พร้อมไฟล์แนับ ${uploadedFiles.length} ไฟล์` : ""
+                                showResponse("success", result.message + fileInfo)
+                                resetForm()
+                            } else {
+                                showResponse("error", result.message)
+                            }
+
+                        } catch (error) {
+                            console.error("Error:", error)
+                            showResponse("error", "เกิดข้อผิดพลาดในการส่งข้อมูล: " + error.message)
+                        }
+
+                        hideLoading()
+                    })
+            }
+            async function fetchExistingPaymentData(transactionId) {
+                try {
+                    const response = await fetch(
+                        `/api/payment-check/${transactionId}`
+                    )
+                    const data = await response.json()
+
+                    if (response.ok && data.exists) {
+                        return data.paymentData
+                    }
+                    return null
+                } catch (error) {
+                    console.error("Error checking existing payment:", error)
+                    return null
+                }
+            }
+
+            // ตัวแปรสำหรับเก็บไฟล์ที่เลือก
+            let selectedFiles = []
+
+            // ฟังก์ชันแสดงรายการไฟล์
+            function displayFiles() {
+                const fileList = document.getElementById("fileList")
+                const label = document.getElementById("fileLabel")
+
+                fileList.innerHTML = ""
+
+                if (selectedFiles.length === 0) {
+                    label.textContent = "เลือกไฟล์ หรือ ลากไฟล์มาวางที่นี่ (สามารถเลือกได้หลายไฟล์)"
+                    label.style.color = "#bdc3c7"
+                    return
+                }
+
+                label.textContent = `📎 เลือกแล้ว ${selectedFiles.length} ไฟล์`
+                label.style.color = "#3498db"
+
+                selectedFiles.forEach((file, index) => {
+                    const fileItem = document.createElement("div")
+                    fileItem.className = "file-item"
+
+                    const fileName = document.createElement("span")
+                    fileName.className = "file-name"
+                    fileName.textContent = file.name
+
+                    const fileSize = document.createElement("span")
+                    fileSize.className = "file-size"
+                    fileSize.textContent = formatFileSize(file.size)
+
+                    const removeBtn = document.createElement("button")
+                    removeBtn.className = "remove-file"
+                    removeBtn.textContent = "×"
+                    removeBtn.type = "button"
+                    removeBtn.onclick = () => removeFile(index)
+
+                    fileItem.appendChild(fileName)
+                    fileItem.appendChild(fileSize)
+                    fileItem.appendChild(removeBtn)
+
+                    fileList.appendChild(fileItem)
+                })
+            }
+
+            // ฟังก์ชันลบไฟล์
+            function removeFile(index) {
+                selectedFiles.splice(index, 1)
+                displayFiles()
+            }
+
+            // ฟังก์ชันฟอร์แมตขนาดไฟล์
+            function formatFileSize(bytes) {
+                if (bytes === 0) return '0 Bytes'
+                const k = 1024
+                const sizes = ['Bytes', 'KB', 'MB', 'GB']
+                const i = Math.floor(Math.log(bytes) / Math.log(k))
+                return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i]
+            }
+
+            // จัดการไฟล์แนบ
+            document
+                .getElementById("attachment")
+                .addEventListener("change", function (e) {
+                    const files = Array.from(e.target.files)
+
+                    // เพิ่มไฟล์ใหม่เข้ากับไฟล์ที่มีอยู่
+                    files.forEach(file => {
+                        // ตรวจสอบว่าไฟล์นี้ยังไม่ได้ถูกเลือกไว้
+                        const isDuplicate = selectedFiles.some(existingFile =>
+                            existingFile.name === file.name && existingFile.size === file.size
+                        )
+
+                        if (!isDuplicate) {
+                            selectedFiles.push(file)
+                        }
+                    })
+
+                    displayFiles()
+                    // รีเซ็ต input เพื่อให้สามารถเลือกไฟล์เดิมได้อีก
+                    e.target.value = ""
+                })
+
+            // จัดการการลากไฟล์
+            const fileInput = document.querySelector(".file-input-label")
+
+            fileInput.addEventListener("dragover", function (e) {
+                e.preventDefault()
+                this.style.backgroundColor = "#3c5a78"
+                this.style.borderColor = "#3498db"
+            })
+
+            fileInput.addEventListener("dragleave", function (e) {
+                e.preventDefault()
+                this.style.backgroundColor = "#34495e"
+                this.style.borderColor = "#4a5f7a"
+            })
+
+            fileInput.addEventListener("drop", function (e) {
+                e.preventDefault()
+                this.style.backgroundColor = "#34495e"
+                this.style.borderColor = "#4a5f7a"
+
+                const files = Array.from(e.dataTransfer.files)
+
+                // เพิ่มไฟล์ใหม่เข้ากับไฟล์ที่มีอยู่
+                files.forEach(file => {
+                    const isDuplicate = selectedFiles.some(existingFile =>
+                        existingFile.name === file.name && existingFile.size === file.size
+                    )
+
+                    if (!isDuplicate) {
+                        selectedFiles.push(file)
+                    }
+                })
+
+                displayFiles()
+            })
+
+            // จัดการการส่งฟอร์ม
+            document
+                .getElementById("paymentForm")
+                .addEventListener("submit", async function (e) {
+                    e.preventDefault()
+
+                    // รวบรวมข้อมูลจากฟอร์ม
+                    const form = e.target
+
+                    // แสดงสถานะกำลังส่ง
+                    showLoading()
+
+                    try {
+                        let uploadedFiles = []
+
+                        // อัปโหลดไฟล์ก่อน (ถ้ามี)
+                        if (selectedFiles.length > 0) {
+                            const fileFormData = new FormData()
+                            selectedFiles.forEach(file => {
+                                fileFormData.append("files", file)
+                            })
+
+                            const uploadResponse = await fetch("/api/upload-attachment", {
+                                method: "POST",
+                                body: fileFormData
+                            })
+
+                            if (uploadResponse.ok) {
+                                const uploadResult = await uploadResponse.json()
+                                if (uploadResult.success) {
+                                    uploadedFiles = uploadResult.files
+                                }
+                            }
+                        }
+
+                        // สร้าง JSON object สำหรับส่งข้อมูลการชำระเงิน
+                        const paymentData = {
+                            account: form.account.value,
+                            transactionId: form.transactionId.value,
+                            transferDate: form.transferDate.value,
+                            transferTime: form.transferTime.value,
+                            recipientAccount: form.recipientAccount.value,
+                            amount: parseFloat(form.amount.value),
+                            additional: form.additional.value,
+                            attachmentFiles: uploadedFiles // ส่งรายชื่อไฟล์ที่อัปโหลดแล้ว
+                        }
+
+                        // ส่งข้อมูลการชำระเงิน
+                        const response = await fetch("/api/payment-notification", {
+                            method: "POST",
+                            headers: {
+                                "Content-Type": "application/json"
+                            },
+                            body: JSON.stringify(paymentData)
+                        })
+
+                        const result = await response.json()
+
+                        if (result.success) {
+                            const fileInfo = uploadedFiles.length > 0 ? ` พร้อมไฟล์แนบ ${uploadedFiles.length} ไฟล์` : ""
+                            showResponse("success", result.message + fileInfo)
+                            resetForm()
+                        } else {
+                            showResponse("error", result.message)
+                        }
+
+                    } catch (error) {
+                        console.error("Error:", error)
+                        showResponse("error", "เกิดข้อผิดพลาดในการส่งข้อมูล: " + error.message)
+                    }
+
+                    hideLoading()
+                })
+
+            // ฟังก์ชันรีเซ็ตฟอร์ม
+            function resetForm() {
+                document.getElementById("paymentForm").reset()
+                selectedFiles = []
+                displayFiles()
+                hideLoading()
+                hideResponse()
+            }
+                    // showResponse(
+                    //     "success",
+                    //     "ส่งข้อมูลการชำระเงินสำเร็จ! เรากำลังตรวจสอบการชำระเงินของคุณ"
+                    // )
+
+                    // ส่งข้อมูลไปยัง API
+                    fetch("/api/payment-notification", {
+                        method: "POST",
+                        body: formData,
+                    })
+                        .then((response) => response.json())
+                        .then((data) => {
+                            if (data.success) {
+                                showResponse(
+                                    "success",
+                                    data.message ||
+                                        "ส่งข้อมูลการชำระเงินสำเร็จ!"
+                                )
+                            } else {
+                                showResponse(
+                                    "error",
+                                    data.message ||
+            // ฟังก์ชันแสดงสถานะกำลังโหลด
+            function showLoading() {
+                document.getElementById("loading").style.display = "block"
+                document.getElementById("response").style.display = "none"
+            }
+
+            // ฟังก์ชันแสดงผลลัพธ์
+            function showResponse(type, message) {
+                const responseDiv = document.getElementById("response")
+                responseDiv.className = `response ${type}`
+                responseDiv.textContent = message
+                responseDiv.style.display = "block"
+                document.getElementById("loading").style.display = "none"
+            }
+
+            // ฟังก์ชันรีเซ็ตฟอร์ม
+            function resetForm() {
+                document.getElementById("paymentForm").reset()
+                selectedFiles = []
+                displayFiles()
+                document.getElementById("response").style.display = "none"
+                document.getElementById("loading").style.display = "none"
+            }
+
+            // ฟังก์ชันซ่อนการตอบสนอง
+            function hideResponse() {
+                document.getElementById("response").style.display = "none"
+            }
+
+            // ตั้งค่าวันที่เริ่มต้น
+            }) // ปิด DOMContentLoaded event
+
+            // ฟังก์ชันเรียก API เพื่อตรวจสอบข้อมูล
+        </script>
+    </body>
+</html>
