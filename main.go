@@ -258,6 +258,68 @@ func setupRoutes(app *fiber.App, db *PaymentDatabase, logManager *LogManager, em
 		})
 	})
 
+	// API endpoint สำหรับเช็ค Transaction ID ใน logs
+	app.Post("/api/check-transaction", func(c *fiber.Ctx) error {
+		var request struct {
+			TransactionID string `json:"transaction_id"`
+		}
+
+		if err := c.BodyParser(&request); err != nil {
+			return c.Status(400).JSON(fiber.Map{
+				"success": false,
+				"message": "ข้อมูลไม่ถูกต้อง",
+			})
+		}
+
+		// เช็คใน payment records ก่อน
+		record, exists := db.GetPayment(request.TransactionID)
+		if exists {
+			return c.JSON(fiber.Map{
+				"exists":   true,
+				"found_in": "payment_records",
+				"payment": fiber.Map{
+					"transactionId":    record.TransactionID,
+					"account":          record.Account,
+					"amount":           record.Amount,
+					"transferDate":     record.TransferDate,
+					"transferTime":     record.TransferTime,
+					"recipientAccount": record.RecipientAccount,
+					"status":           record.Status,
+					"submittedDate":    record.SubmittedAt.Format(TimeFormat),
+				},
+			})
+		}
+
+		// เช็คใน logs
+		content, err := os.ReadFile(LogFileName)
+		if err != nil {
+			return c.JSON(fiber.Map{
+				"exists":  false,
+				"message": "ไม่พบข้อมูล",
+			})
+		}
+
+		lines := strings.Split(string(content), "\n")
+		for _, line := range lines {
+			if strings.TrimSpace(line) == "" {
+				continue
+			}
+
+			// ตรวจสอบว่ามี Transaction ID ในบรรทัดนี้หรือไม่
+			if strings.Contains(line, request.TransactionID) {
+				return c.JSON(fiber.Map{
+					"exists":    true,
+					"found_in":  "logs",
+					"log_entry": line,
+				})
+			}
+		}
+
+		return c.JSON(fiber.Map{
+			"exists": false,
+		})
+	})
+
 	// API endpoint สำหรับดู logs
 	app.Get("/api/logs/:transactionId", func(c *fiber.Ctx) error {
 		transactionId := c.Params("transactionId")

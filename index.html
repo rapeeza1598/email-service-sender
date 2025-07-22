@@ -170,6 +170,96 @@
                 height: 20px;
                 cursor: pointer;
             }
+
+            /* Popup styles */
+            .popup-overlay {
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                background: rgba(0, 0, 0, 0.7);
+                display: none;
+                justify-content: center;
+                align-items: center;
+                z-index: 1000;
+            }
+
+            .popup-content {
+                background: #2c3e50;
+                border-radius: 15px;
+                padding: 30px;
+                max-width: 500px;
+                width: 90%;
+                text-align: center;
+                box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+                border: 2px solid #3498db;
+            }
+
+            .popup-icon {
+                font-size: 48px;
+                margin-bottom: 20px;
+            }
+
+            .popup-title {
+                color: #f1c40f;
+                font-size: 24px;
+                font-weight: bold;
+                margin-bottom: 15px;
+            }
+
+            .popup-message {
+                color: #ecf0f1;
+                font-size: 16px;
+                line-height: 1.6;
+                margin-bottom: 25px;
+            }
+
+            .popup-transaction-id {
+                background: #34495e;
+                border: 2px solid #3498db;
+                border-radius: 8px;
+                padding: 10px;
+                color: #3498db;
+                font-weight: bold;
+                font-size: 18px;
+                margin-bottom: 20px;
+            }
+
+            .popup-buttons {
+                display: flex;
+                gap: 15px;
+                justify-content: center;
+            }
+
+            .popup-btn {
+                padding: 12px 24px;
+                border: none;
+                border-radius: 8px;
+                font-weight: bold;
+                cursor: pointer;
+                transition: all 0.3s ease;
+            }
+
+            .popup-btn-primary {
+                background: #3498db;
+                color: white;
+            }
+
+            .popup-btn-primary:hover {
+                background: #2980b9;
+                transform: translateY(-2px);
+            }
+
+            .popup-btn-secondary {
+                background: #95a5a6;
+                color: white;
+            }
+
+            .popup-btn-secondary:hover {
+                background: #7f8c8d;
+                transform: translateY(-2px);
+            }
         </style>
     </head>
     <body>
@@ -279,12 +369,51 @@
             <div id="response" class="response"></div>
         </div>
 
+        <!-- Popup for transaction already sent -->
+        <div id="transactionPopup" class="popup-overlay">
+            <div class="popup-content">
+                <div class="popup-icon">⚠️</div>
+                <div class="popup-title">
+                    แจ้งเตือน: Transaction ถูกส่งแล้ว!
+                </div>
+                <div class="popup-message">
+                    Transaction ID นี้ได้ถูกส่งการแจ้งเตือนการชำระเงินไปแล้ว
+                </div>
+                <div
+                    id="transactionIdDisplay"
+                    class="popup-transaction-id"
+                ></div>
+                <div class="popup-buttons">
+                    <button
+                        class="popup-btn popup-btn-primary"
+                        onclick="clearUrlAndContinue()"
+                    >
+                        ส่งใหม่อีกครั้ง
+                    </button>
+                    <button
+                        class="popup-btn popup-btn-secondary"
+                        onclick="closePopup()"
+                    >
+                        ปิด
+                    </button>
+                </div>
+            </div>
+        </div>
+
         <script>
             // ตัวแปรสำหรับเก็บไฟล์ที่เลือก
             let selectedFiles = []
 
             // เมื่อ DOM โหลดเสร็จ
             document.addEventListener("DOMContentLoaded", function () {
+                // เช็ค transaction_id จาก URL parameter
+                const urlParams = new URLSearchParams(window.location.search)
+                const transactionId = urlParams.get("transaction_id")
+
+                if (transactionId) {
+                    checkTransactionExists(transactionId)
+                }
+
                 // ตั้งค่าวันที่และเวลาเริ่มต้น
                 document.getElementById("transferDate").valueAsDate = new Date()
                 const now = new Date()
@@ -302,6 +431,65 @@
                     .addEventListener("submit", handleFormSubmit)
             })
 
+            // Function to check if transaction exists in logs
+            async function checkTransactionExists(transactionId) {
+                try {
+                    const response = await fetch("/api/check-transaction", {
+                        method: "POST",
+                        headers: {
+                            "Content-Type": "application/json",
+                        },
+                        body: JSON.stringify({ transaction_id: transactionId }),
+                    })
+
+                    const result = await response.json()
+
+                    if (result.exists) {
+                        showTransactionPopup(transactionId)
+                    } else {
+                        // If transaction doesn't exist, pre-fill the form
+                        document.getElementById("transactionId").value =
+                            transactionId
+                    }
+                } catch (error) {
+                    console.error("Error checking transaction:", error)
+                    // If error, still pre-fill the form
+                    document.getElementById("transactionId").value =
+                        transactionId
+                }
+            }
+
+            // Show popup when transaction already exists
+            function showTransactionPopup(transactionId) {
+                document.getElementById("transactionIdDisplay").textContent =
+                    transactionId
+                document.getElementById("transactionPopup").style.display =
+                    "flex"
+                // Pre-fill form in background
+                document.getElementById("transactionId").value = transactionId
+            }
+
+            // Close popup
+            function closePopup() {
+                document.getElementById("transactionPopup").style.display =
+                    "none"
+            }
+
+            // Clear URL and continue with new transaction
+            function clearUrlAndContinue() {
+                // Clear URL parameters
+                const url = new URL(window.location)
+                url.search = ""
+                window.history.replaceState({}, document.title, url.pathname)
+
+                // Clear form
+                document.getElementById("paymentForm").reset()
+                selectedFiles = []
+                updateFileList()
+
+                closePopup()
+            }
+
             // ฟังก์ชันจัดการการเลือกไฟล์
             function handleFileSelect(e) {
                 const files = Array.from(e.target.files)
@@ -311,6 +499,10 @@
 
             // ฟังก์ชันแสดงรายการไฟล์
             function displayFiles() {
+                updateFileList()
+            }
+
+            function updateFileList() {
                 const fileList = document.getElementById("fileList")
                 fileList.innerHTML = ""
 
